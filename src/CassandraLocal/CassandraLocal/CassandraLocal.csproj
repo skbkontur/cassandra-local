@@ -13,6 +13,7 @@
     <PackageProjectUrl>https://github.com/skbkontur/cassandra-local</PackageProjectUrl>
     <RepositoryUrl>https://github.com/skbkontur/cassandra-local</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Management" />
