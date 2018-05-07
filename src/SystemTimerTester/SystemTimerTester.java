@@ -2,11 +2,16 @@ import java.util.concurrent.locks.LockSupport;
 
 public class SystemTimerTester
 {
-    private static final long testDurationSec = 23;
+    private static final long testDurationSecDefault = 23;
     private static final long singleParkDurationNs = 10 * 1000;
 
     public static void main(String[] args)
     {
+        long testDurationSec = testDurationSecDefault;
+        if (args.length > 0) {
+            testDurationSec = Integer.parseInt(args[0]);
+        }
+
         System.out.println("I'll test precision of your system timer and tell you whether it's ok to use Cassandra on this host or not.");
         System.out.println("The test duration is about " + testDurationSec + " seconds");
         System.out.println("Running test...");
