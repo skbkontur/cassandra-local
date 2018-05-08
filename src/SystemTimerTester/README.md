@@ -1,4 +1,4 @@
-It's a tool to determine whether you need to use patched Cassandra or not.
+SystemTimerTester is a tool to determine whether you need to use patched Cassandra or not.
 
 Cassandra uses method LockSupport.parkNanos which behavior is platform-dependent. 
 On Windows due to low timer resolution this method will suspend thread for at least 1 ms even if passed argument would be less. 
@@ -9,5 +9,7 @@ So, this script just calls LockSupport.parkNanos many times and compares expecte
 If they differ too much, script will warn you.
 
 Usage:
+```
 javac -target 1.8 SystemTimerTester.java
 java SystemTimerTester
+```
