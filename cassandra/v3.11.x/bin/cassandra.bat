@@ -55,8 +55,8 @@ REM ----------------------------------------------------------------------------
 REM JVM Opts we'll use in legacy run or installation
 set JAVA_OPTS=-ea^
  -javaagent:"%CASSANDRA_HOME%\lib\jamm-0.3.0.jar"^
- -Xms2G^
- -Xmx2G^
+ -Xms{{HeapSize}}^
+ -Xmx{{HeapSize}}^
  -XX:+HeapDumpOnOutOfMemoryError^
  -XX:+UseParNewGC^
  -XX:+UseConcMarkSweepGC^
@@ -65,14 +65,17 @@ set JAVA_OPTS=-ea^
  -XX:MaxTenuringThreshold=1^
  -XX:CMSInitiatingOccupancyFraction=75^
  -XX:+UseCMSInitiatingOccupancyOnly^
+ -XX:+UnlockCommercialFeatures^
+ -XX:+FlightRecorder^
  -Dlogback.configurationFile=logback.xml^
  -Djava.library.path="%CASSANDRA_HOME%\lib\sigar-bin"^
- -Dcassandra.jmx.local.port=7199
+ -Dcassandra.jmx.local.port={{JmxPort}}^
+ -Dskbkontur.local.cassandra.node.name={{LocalNodeName}}
+
 REM **** JMX REMOTE ACCESS SETTINGS SEE: https://wiki.apache.org/cassandra/JmxSecurity ***
-REM -Dcom.sun.management.jmxremote.port=7199^
+REM -Dcom.sun.management.jmxremote.port={{JmxPort}}^
 REM -Dcom.sun.management.jmxremote.ssl=false^
-REM -Dcom.sun.management.jmxremote.authenticate=true^
-REM -Dcom.sun.management.jmxremote.password.file=C:\jmxremote.password
+REM -Dcom.sun.management.jmxremote.authenticate=false
 
 REM ***** CLASSPATH library setting *****
 REM Ensure that any user defined CLASSPATH variables are not used on startup
