@@ -12,7 +12,7 @@ namespace SkbKontur.Cassandra.Local
     public static class LocalCassandraProcessManager
     {
         private const string localCassandraNodeNameMarker = "skbkontur.local.cassandra.node.name";
-        private static readonly Regex anyCassandraJar = new Regex(@"apache-cassandra-[\d\.]+\.jar", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex anyCassandraProcessRegex = new Regex(@"org\.apache\.cassandra\.service\.CassandraDaemon", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public static string StartLocalCassandraProcess(string cassandraDirectory)
         {
@@ -101,7 +101,7 @@ namespace SkbKontur.Cassandra.Local
                     var cassandraPid = int.Parse(mo["ProcessId"].ToString());
                     if (string.IsNullOrEmpty(localNodeNameOrNothing))
                     {
-                        if (anyCassandraJar.IsMatch(commandLine))
+                        if (anyCassandraProcessRegex.IsMatch(commandLine))
                             cassandraPids.Add(cassandraPid);
                     }
                     else
