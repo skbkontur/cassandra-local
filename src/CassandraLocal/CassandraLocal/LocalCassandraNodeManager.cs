@@ -7,23 +7,23 @@ namespace SkbKontur.Cassandra.Local
 {
     public static class LocalCassandraNodeManager
     {
-        public static void Restart(this LocalCassandraNode node)
+        public static void Restart(this LocalCassandraNode node, TimeSpan? timeout = null)
         {
-            Stop(node);
+            Stop(node, timeout);
             Deploy(node);
-            Start(node);
+            Start(node, timeout);
         }
 
-        public static void Start(this LocalCassandraNode node)
+        public static void Start(this LocalCassandraNode node, TimeSpan? timeout = null)
         {
-            var localNodeName = LocalCassandraProcessManager.StartLocalCassandraProcess(node.DeployDirectory);
+            var localNodeName = LocalCassandraProcessManager.StartLocalCassandraProcess(node.DeployDirectory, timeout);
             if (localNodeName != node.LocalNodeName)
                 throw new InvalidOperationException($"actual localNodeName ({localNodeName}) != LocalNodeName ({node.LocalNodeName})");
         }
 
-        public static void Stop(this LocalCassandraNode node)
+        public static void Stop(this LocalCassandraNode node, TimeSpan? timeout = null)
         {
-            LocalCassandraProcessManager.StopLocalCassandraProcess(node.LocalNodeName);
+            LocalCassandraProcessManager.StopLocalCassandraProcess(node.LocalNodeName, timeout);
         }
 
         public static void Deploy(this LocalCassandraNode node)
