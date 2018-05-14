@@ -116,11 +116,14 @@ namespace SkbKontur.Cassandra.Local
         {
             using (var searcher = new ManagementObjectSearcher($"SELECT CommandLine FROM Win32_Process WHERE ParentProcessId = {cassandraShellProcess.Id}"))
             {
-                var commandLine = searcher.Get().Cast<ManagementObject>().Single()["CommandLine"].ToString();
-                var patternToMatch= $"{localCassandraNodeNameMarker}=";
-                var startPos = commandLine.IndexOf(patternToMatch, StringComparison.InvariantCultureIgnoreCase) + patternToMatch.Length;
-                var endPos = commandLine.IndexOf(' ', startPos);
-                return commandLine.Substring(startPos, endPos - startPos);
+                var commandLines = searcher.Get().Cast<ManagementObject>().Select(x => x["CommandLine"].ToString()).ToList();
+                var javaCommandLine = commandLines.SingleOrDefault(x => x.IndexOf("java", StringComparison.InvariantCultureIgnoreCase) != -1);
+                if (string.IsNullOrEmpty(javaCommandLine))
+                    throw new InvalidOperationException($"Failed to get java command line from: {string.Join("; ", commandLines)}");
+                var patternToMatch = $"{localCassandraNodeNameMarker}=";
+                var startPos = javaCommandLine.IndexOf(patternToMatch, StringComparison.InvariantCultureIgnoreCase) + patternToMatch.Length;
+                var endPos = javaCommandLine.IndexOf(' ', startPos);
+                return javaCommandLine.Substring(startPos, endPos - startPos);
             }
         }
     }
