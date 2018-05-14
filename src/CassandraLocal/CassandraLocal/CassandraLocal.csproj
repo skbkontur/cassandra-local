@@ -7,9 +7,8 @@
     <Version>1.0.4</Version>
     <AssemblyVersion>1.0.4.0</AssemblyVersion>
     <Authors>SKB Kontur</Authors>
-    <Copyright>SKB Kontur 2018</Copyright>
     <RequireLicenseAcceptance>false</RequireLicenseAcceptance>
-    <PackageTags>cassandra</PackageTags>
+    <PackageTags>cassandra windows</PackageTags>
     <PackageProjectUrl>https://github.com/skbkontur/cassandra-local</PackageProjectUrl>
     <RepositoryUrl>https://github.com/skbkontur/cassandra-local</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
