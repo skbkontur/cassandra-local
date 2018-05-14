@@ -7,7 +7,7 @@ using SkbKontur.Cassandra.Local;
 
 namespace CassandraLocal.Tests
 {
-    public class LocalCassandraNode_Tests
+    public class LocalCassandraNodeManager_Tests
     {
         [TestCase("2.2.x")]
         [TestCase("3.11.x")]
@@ -20,10 +20,9 @@ namespace CassandraLocal.Tests
             Console.Out.WriteLine($"deployDirectory: {deployDirectory}");
 
             var beforeStartTimestamp = DateTime.Now;
-            var localNodeName = Guid.NewGuid().ToString("N");
             var node = new LocalCassandraNode(templateDirectory, deployDirectory)
                 {
-                    LocalNodeName = localNodeName
+                    LocalNodeName = Guid.NewGuid().ToString("N")
                 };
 
             node.Restart();

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace SkbKontur.Cassandra.Local
@@ -11,6 +12,7 @@ namespace SkbKontur.Cassandra.Local
     public static class LocalCassandraProcessManager
     {
         private const string localCassandraNodeNameMarker = "skbkontur.local.cassandra.node.name";
+        private static readonly Regex anyCassandraJar = new Regex(@"apache-cassandra-[\d\.]+\.jar", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public static string StartLocalCassandraProcess(string cassandraDirectory)
         {
@@ -99,7 +101,7 @@ namespace SkbKontur.Cassandra.Local
                     var cassandraPid = int.Parse(mo["ProcessId"].ToString());
                     if (string.IsNullOrEmpty(localNodeNameOrNothing))
                     {
-                        if (commandLine.Contains(localCassandraNodeNameMarker))
+                        if (anyCassandraJar.IsMatch(commandLine))
                             cassandraPids.Add(cassandraPid);
                     }
                     else
