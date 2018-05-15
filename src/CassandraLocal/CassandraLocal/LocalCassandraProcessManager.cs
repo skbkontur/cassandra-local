@@ -32,23 +32,24 @@ namespace SkbKontur.Cassandra.Local
                 };
             cassandraShellProcess.StartInfo.EnvironmentVariables["JAVA_HOME"] = JavaHomeHelpers.GetJava8Home();
             cassandraShellProcess.Start();
-            WaitForCassandraToStart(cassandraDirectory, timeout ?? defaultWaitTimeout);
+            WaitForCassandraToStart(cassandraDirectory, timeout);
             var localNodeName = GetLocalCassandraNodeName(cassandraShellProcess);
             return localNodeName;
         }
 
-        private static void WaitForCassandraToStart(string cassandraDirectory, TimeSpan timeout)
+        public static void WaitForCassandraToStart(string cassandraDirectory, TimeSpan? timeout = null)
         {
-            var sw = Stopwatch.StartNew();
+            var waitTimeout = timeout ?? defaultWaitTimeout;
             var logFileName = Path.Combine(cassandraDirectory, @"logs/system.log");
-            while (sw.Elapsed < timeout)
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed < waitTimeout)
             {
                 if (File.Exists(logFileName))
                 {
                     using (var file = new FileStream(logFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     using (var reader = new StreamReader(file))
                     {
-                        while (sw.Elapsed < timeout)
+                        while (sw.Elapsed < waitTimeout)
                         {
                             var logContent = reader.ReadLine();
                             if (!string.IsNullOrEmpty(logContent) && logContent.Contains("Listening for thrift clients..."))
@@ -58,33 +59,34 @@ namespace SkbKontur.Cassandra.Local
                 }
                 Thread.Sleep(sleepTimeout);
             }
-            throw new InvalidOperationException($"Failed to start cassandra from {cassandraDirectory} in {timeout}");
+            throw new InvalidOperationException($"Failed to start cassandra from {cassandraDirectory} in {waitTimeout}");
         }
 
         public static void StopAllLocalCassandraProcesses(TimeSpan? timeout = null)
         {
             foreach (var cassandraPid in GetAllLocalCassandraProcessIds())
                 Process.GetProcessById(cassandraPid).Kill();
-            WaitFor("stop all local cassandra processes", timeout ?? defaultWaitTimeout, () => !GetAllLocalCassandraProcessIds().Any());
+            WaitFor("stop all local cassandra processes", timeout, () => !GetAllLocalCassandraProcessIds().Any());
         }
 
         public static void StopLocalCassandraProcess(string localNodeName, TimeSpan? timeout = null)
         {
             foreach (var cassandraPid in GetLocalCassandraProcessIds(localNodeName))
                 Process.GetProcessById(cassandraPid).Kill();
-            WaitFor($"stop local cassandra node {localNodeName}", timeout ?? defaultWaitTimeout, () => !GetLocalCassandraProcessIds(localNodeName).Any());
+            WaitFor($"stop local cassandra node {localNodeName}", timeout, () => !GetLocalCassandraProcessIds(localNodeName).Any());
         }
 
-        private static void WaitFor(string actionDescription, TimeSpan timeout, Func<bool> action)
+        private static void WaitFor(string actionDescription, TimeSpan? timeout, Func<bool> action)
         {
+            var waitTimeout = timeout ?? defaultWaitTimeout;
             var sw = Stopwatch.StartNew();
-            while (sw.Elapsed < timeout)
+            while (sw.Elapsed < waitTimeout)
             {
                 if (action())
                     return;
                 Thread.Sleep(sleepTimeout);
             }
-            throw new InvalidOperationException($"Failed to {actionDescription} in {timeout}");
+            throw new InvalidOperationException($"Failed to {actionDescription} in {waitTimeout}");
         }
 
         public static List<int> GetAllLocalCassandraProcessIds()
