@@ -16,9 +16,10 @@ namespace SkbKontur.Cassandra.Local
 
         public static void Start(this LocalCassandraNode node, TimeSpan? timeout = null)
         {
-            var localNodeName = LocalCassandraProcessManager.StartLocalCassandraProcess(node.DeployDirectory, timeout);
+            var localNodeName = LocalCassandraProcessManager.StartLocalCassandraProcess(node.DeployDirectory);
             if (localNodeName != node.LocalNodeName)
                 throw new InvalidOperationException($"actual localNodeName ({localNodeName}) != LocalNodeName ({node.LocalNodeName})");
+            LocalCassandraProcessManager.WaitForLocalCassandraPortsToOpen(node.RpcPort, node.CqlPort, timeout);
         }
 
         public static void Stop(this LocalCassandraNode node, TimeSpan? timeout = null)
@@ -28,13 +29,25 @@ namespace SkbKontur.Cassandra.Local
 
         public static void Deploy(this LocalCassandraNode node)
         {
-            if (Directory.Exists(node.DeployDirectory))
-                Directory.Delete(node.DeployDirectory, recursive: true);
-            Directory.CreateDirectory(node.DeployDirectory);
-
+            CleanupCassandraDeployDirectory(node.DeployDirectory);
             DirectoryCopy(node.TemplateDirectory, node.DeployDirectory);
-
             ExpandSettingsTemplates(node);
+        }
+
+        private static void CleanupCassandraDeployDirectory(string cassandraDeployDirectory)
+        {
+            if (!Directory.Exists(cassandraDeployDirectory))
+                return;
+
+            foreach (var file in Directory.GetFiles(cassandraDeployDirectory))
+                File.Delete(file);
+
+            foreach (var dir in Directory.GetDirectories(cassandraDeployDirectory))
+            {
+                if (string.Equals(Path.GetFileName(dir), "logs", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                Directory.Delete(dir, recursive: true);
+            }
         }
 
         private static void ExpandSettingsTemplates(LocalCassandraNode node)

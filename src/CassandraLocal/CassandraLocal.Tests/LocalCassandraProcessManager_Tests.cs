@@ -10,7 +10,7 @@ namespace CassandraLocal.Tests
         [Test]
         public void StopAllLocalCassandraProcesses()
         {
-            Assert.That(LocalCassandraProcessManager.GetAllLocalCassandraProcessIds(), Is.Empty);
+            Assert.That(LocalCassandraProcessManager.GetAllLocalCassandraProcessIds(), Is.Empty, "no cassandra process should be running before test");
 
             StartLocalCassandra(cassandraTemplateVersion: "2.2.x", instanceId: 1);
             Assert.That(LocalCassandraProcessManager.GetAllLocalCassandraProcessIds().Count, Is.EqualTo(1));
@@ -19,7 +19,7 @@ namespace CassandraLocal.Tests
             Assert.That(LocalCassandraProcessManager.GetAllLocalCassandraProcessIds().Count, Is.EqualTo(2));
 
             LocalCassandraProcessManager.StopAllLocalCassandraProcesses();
-            Assert.That(LocalCassandraProcessManager.GetAllLocalCassandraProcessIds(), Is.Empty);
+            Assert.That(LocalCassandraProcessManager.GetAllLocalCassandraProcessIds(), Is.Empty, "no cassandra process should be running after test");
         }
 
         private static void StartLocalCassandra(string cassandraTemplateVersion, int instanceId)
@@ -44,6 +44,8 @@ namespace CassandraLocal.Tests
 
             var actualLocalNodeName = LocalCassandraProcessManager.StartLocalCassandraProcess(node.DeployDirectory);
             Assert.That(actualLocalNodeName, Is.EqualTo(localNodeName));
+
+            LocalCassandraProcessManager.WaitForLocalCassandraPortsToOpen(node.RpcPort, node.CqlPort);
         }
     }
 }

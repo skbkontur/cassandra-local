@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -13,8 +14,6 @@ namespace SkbKontur.Cassandra.Local
     {
         private const string localCassandraNodeNameMarker = "skbkontur.local.cassandra.node.name";
         private static readonly Regex anyCassandraProcessRegex = new Regex(@"org\.apache\.cassandra\.service\.CassandraDaemon", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly TimeSpan defaultWaitTimeout = TimeSpan.FromSeconds(30);
-        private static readonly TimeSpan sleepTimeout = TimeSpan.FromMilliseconds(300);
 
         public static string StartLocalCassandraProcess(string cassandraDirectory, TimeSpan? timeout = null)
         {
@@ -32,34 +31,17 @@ namespace SkbKontur.Cassandra.Local
                 };
             cassandraShellProcess.StartInfo.EnvironmentVariables["JAVA_HOME"] = JavaHomeHelpers.GetJava8Home();
             cassandraShellProcess.Start();
-            WaitForCassandraToStart(cassandraDirectory, timeout);
-            var localNodeName = GetLocalCassandraNodeName(cassandraShellProcess);
+            var localNodeName = GetLocalCassandraNodeName(cassandraShellProcess, timeout);
             return localNodeName;
         }
 
-        public static void WaitForCassandraToStart(string cassandraDirectory, TimeSpan? timeout = null)
+        public static void WaitForLocalCassandraPortsToOpen(int rpcPort, int cqlPort, TimeSpan? timeout = null)
         {
-            var waitTimeout = timeout ?? defaultWaitTimeout;
-            var logFileName = Path.Combine(cassandraDirectory, @"logs/system.log");
-            var sw = Stopwatch.StartNew();
-            while (sw.Elapsed < waitTimeout)
+            WaitFor($"wait for local cassandra node to start listening on rpc port {rpcPort} and cql port {cqlPort}", timeout, () =>
             {
-                if (File.Exists(logFileName))
-                {
-                    using (var file = new FileStream(logFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    using (var reader = new StreamReader(file))
-                    {
-                        while (sw.Elapsed < waitTimeout)
-                        {
-                            var logContent = reader.ReadLine();
-                            if (!string.IsNullOrEmpty(logContent) && logContent.Contains("Listening for thrift clients..."))
-                                return;
-                        }
-                    }
-                }
-                Thread.Sleep(sleepTimeout);
-            }
-            throw new InvalidOperationException($"Failed to start cassandra from {cassandraDirectory} in {waitTimeout}");
+                var activeTcpListeners = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners();
+                return activeTcpListeners.Any(x => x.Port == rpcPort) && activeTcpListeners.Any(x => x.Port == cqlPort);
+            });
         }
 
         public static void StopAllLocalCassandraProcesses(TimeSpan? timeout = null)
@@ -78,13 +60,13 @@ namespace SkbKontur.Cassandra.Local
 
         private static void WaitFor(string actionDescription, TimeSpan? timeout, Func<bool> action)
         {
-            var waitTimeout = timeout ?? defaultWaitTimeout;
+            var waitTimeout = timeout ?? TimeSpan.FromSeconds(30);
             var sw = Stopwatch.StartNew();
             while (sw.Elapsed < waitTimeout)
             {
                 if (action())
                     return;
-                Thread.Sleep(sleepTimeout);
+                Thread.Sleep(TimeSpan.FromMilliseconds(300));
             }
             throw new InvalidOperationException($"Failed to {actionDescription} in {waitTimeout}");
         }
@@ -128,18 +110,23 @@ namespace SkbKontur.Cassandra.Local
             return cassandraPids;
         }
 
-        private static string GetLocalCassandraNodeName(Process cassandraShellProcess)
+        private static string GetLocalCassandraNodeName(Process cassandraShellProcess, TimeSpan? timeout)
+        {
+            string javaCommandLine = null;
+            WaitFor($"get java command line for cassandra shell process #{cassandraShellProcess.Id}", timeout, () => TryGetLocalCassandraJavaCommanLine(cassandraShellProcess, out javaCommandLine));
+            var patternToMatch = $"{localCassandraNodeNameMarker}=";
+            var startPos = javaCommandLine.IndexOf(patternToMatch, StringComparison.InvariantCultureIgnoreCase) + patternToMatch.Length;
+            var endPos = javaCommandLine.IndexOf(' ', startPos);
+            return javaCommandLine.Substring(startPos, endPos - startPos);
+        }
+
+        private static bool TryGetLocalCassandraJavaCommanLine(Process cassandraShellProcess, out string javaCommandLine)
         {
             using (var searcher = new ManagementObjectSearcher($"SELECT CommandLine FROM Win32_Process WHERE ParentProcessId = {cassandraShellProcess.Id}"))
             {
                 var commandLines = searcher.Get().Cast<ManagementObject>().Select(x => x["CommandLine"].ToString()).ToList();
-                var javaCommandLine = commandLines.SingleOrDefault(x => x.IndexOf("java", StringComparison.InvariantCultureIgnoreCase) != -1);
-                if (string.IsNullOrEmpty(javaCommandLine))
-                    throw new InvalidOperationException($"Failed to get java command line from: {string.Join("; ", commandLines)}");
-                var patternToMatch = $"{localCassandraNodeNameMarker}=";
-                var startPos = javaCommandLine.IndexOf(patternToMatch, StringComparison.InvariantCultureIgnoreCase) + patternToMatch.Length;
-                var endPos = javaCommandLine.IndexOf(' ', startPos);
-                return javaCommandLine.Substring(startPos, endPos - startPos);
+                javaCommandLine = commandLines.SingleOrDefault(x => x.IndexOf("java", StringComparison.InvariantCultureIgnoreCase) != -1);
+                return !string.IsNullOrEmpty(javaCommandLine);
             }
         }
     }
