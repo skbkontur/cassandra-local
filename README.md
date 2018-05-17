@@ -8,7 +8,7 @@ Simplest usage:
 ```
 var templateRelativePath = "cassandra-local/cassandra/v3.11.x";
 var templateDir = DirectoryHelpers.FindDirectory(AppDomain.CurrentDomain.BaseDirectory, templateRelativePath);
-var deployDi = Path.Combine(Path.GetTempPath(), "deployed_cassandra_v3.11.x");
+var deployDir = Path.Combine(Path.GetTempPath(), "deployed_cassandra_v3.11.x");
 var node = new LocalCassandraNode(templateDir, deployDir)
 {
     RpcPort = 9160,
