@@ -13,3 +13,4 @@
 *.java        text
 *.iml         text
 *.xml         text
+*.config      text

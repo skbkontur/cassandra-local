@@ -5,7 +5,7 @@ init:
 
 before_build:
   - cmd: dotnet --info
-  - cmd: dotnet restore ./src/CassandraLocal/CassandraLocal.sln --verbosity m
+  - cmd: dotnet restore ./src/CassandraLocal/CassandraLocal.sln --verbosity minimal
 
 build_script:
   - cmd: dotnet build --configuration Release ./src/CassandraLocal/CassandraLocal.sln
