@@ -18,3 +18,5 @@ node.Retart();
 ...
 node.Stop();
 ```
+
+You will need to install Java 8 64-bit either JDK or JRE to run Cassandra.
