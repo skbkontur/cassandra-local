@@ -5,7 +5,7 @@
     <AssemblyName>SkbKontur.Cassandra.Local</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <PackageId>$(AssemblyName)</PackageId>
-    <VersionPrefix>1.0.7</VersionPrefix>
+    <VersionPrefix>1.0.8</VersionPrefix>
     <Version>$(VersionPrefix)</Version>
     <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
     <Authors>SKB Kontur</Authors>
@@ -13,6 +13,12 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/skbkontur/cassandra-local</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- source line mappings are not supported in portable pdb format yet (https://github.com/dotnet/core/blob/master/Documentation/diagnostics/portable_pdb.md) -->
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
