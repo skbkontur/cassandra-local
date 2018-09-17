@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2 - 2018.09.18
+- Set TargetFramework to netstandard2.0. Run tests against net472 and netcoreapp2.1.
+
 ## v1.1 - 2018.09.13
 - Set TargetFramework to net472.
 - Use [Nerdbank.GitVersioning](https://github.com/AArnott/Nerdbank.GitVersioning) to automate generation of assembly 
