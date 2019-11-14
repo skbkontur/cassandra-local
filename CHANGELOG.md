@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.3.x - 2019.11.14
+## v1.3.3 - 2019.11.14
 - Update Cassandra v3.11.x to [v3.11.5](http://archive.apache.org/dist/cassandra/3.11.5/).
 - Use [SourceLink](https://github.com/dotnet/sourcelink) to help ReSharper decompiler show actual code.
 
