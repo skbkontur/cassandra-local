@@ -58,19 +58,6 @@ namespace SkbKontur.Cassandra.Local
             WaitFor($"stop local cassandra node {localNodeName}", timeout, () => !GetLocalCassandraProcessIds(localNodeName).Any());
         }
 
-        private static void WaitFor(string actionDescription, TimeSpan? timeout, Func<bool> action)
-        {
-            var waitTimeout = timeout ?? TimeSpan.FromSeconds(30);
-            var sw = Stopwatch.StartNew();
-            while (sw.Elapsed < waitTimeout)
-            {
-                if (action())
-                    return;
-                Thread.Sleep(TimeSpan.FromMilliseconds(300));
-            }
-            throw new InvalidOperationException($"Failed to {actionDescription} in {waitTimeout}");
-        }
-
         public static List<int> GetAllLocalCassandraProcessIds()
         {
             return DoGetLocalCassandraProcessIds(localNodeNameOrNothing: null);
@@ -128,6 +115,19 @@ namespace SkbKontur.Cassandra.Local
                 javaCommandLine = commandLines.SingleOrDefault(x => x != null && x.IndexOf("java", StringComparison.InvariantCultureIgnoreCase) != -1);
                 return !string.IsNullOrEmpty(javaCommandLine);
             }
+        }
+        
+        private static void WaitFor(string actionDescription, TimeSpan? timeout, Func<bool> action)
+        {
+            var waitTimeout = timeout ?? TimeSpan.FromSeconds(30);
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed < waitTimeout)
+            {
+                if (action())
+                    return;
+                Thread.Sleep(TimeSpan.FromMilliseconds(300));
+            }
+            throw new InvalidOperationException($"Failed to {actionDescription} in {waitTimeout}");
         }
     }
 }
