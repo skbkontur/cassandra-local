@@ -7,6 +7,7 @@ using System.Management;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SkbKontur.Cassandra.Local
 {
@@ -46,16 +47,18 @@ namespace SkbKontur.Cassandra.Local
 
         public static void StopAllLocalCassandraProcesses(TimeSpan? timeout = null)
         {
-            foreach (var cassandraPid in GetAllLocalCassandraProcessIds())
-                Process.GetProcessById(cassandraPid).Kill();
-            WaitFor("stop all local cassandra processes", timeout, () => !GetAllLocalCassandraProcessIds().Any());
+            var waitTimeout = timeout ?? TimeSpan.FromSeconds(30);
+            
+            if (!TryStopProcesses(GetAllLocalCassandraProcessIds(), waitTimeout))
+                throw new InvalidOperationException($"Failed to stop all local cassandra processes in {waitTimeout}");
         }
 
         public static void StopLocalCassandraProcess(string localNodeName, TimeSpan? timeout = null)
         {
-            foreach (var cassandraPid in GetLocalCassandraProcessIds(localNodeName))
-                Process.GetProcessById(cassandraPid).Kill();
-            WaitFor($"stop local cassandra node {localNodeName}", timeout, () => !GetLocalCassandraProcessIds(localNodeName).Any());
+            var waitTimeout = timeout ?? TimeSpan.FromSeconds(30);
+            
+            if (!TryStopProcesses(GetLocalCassandraProcessIds(localNodeName), waitTimeout))
+                throw new InvalidOperationException($"Failed to stop local cassandra node {localNodeName} in {waitTimeout}");
         }
 
         public static List<int> GetAllLocalCassandraProcessIds()
@@ -128,6 +131,21 @@ namespace SkbKontur.Cassandra.Local
                 Thread.Sleep(TimeSpan.FromMilliseconds(300));
             }
             throw new InvalidOperationException($"Failed to {actionDescription} in {waitTimeout}");
+        }
+
+        private static bool TryStopProcesses(List<int> processIds, TimeSpan timeout)
+        {
+            var stopTasks = processIds.Select(processId => Task.Run(() => TryStopProcess(processId, timeout)));
+            return Task.WhenAll(stopTasks).Result.All(x => x);
+        }
+        
+        private static bool TryStopProcess(int processId, TimeSpan timeout)
+        {
+            using (var process = Process.GetProcessById(processId))
+            {
+                process.Kill();
+                return process.WaitForExit((int)timeout.TotalMilliseconds);
+            }
         }
     }
 }
