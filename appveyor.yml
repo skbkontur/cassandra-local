@@ -22,7 +22,7 @@ init:
           $env:SHOULD_CREATE_RELEASE = "true"
           Write-Host "Will create release for $tagName tag" -ForegroundColor "Green"
         }
-        $matchVersion = Select-String -Path ./version.json -Pattern "`"version`": `"$version`""
+        $matchVersion = Select-String -Path ./src/CassandraLocal/version.json -Pattern "`"version`": `"$version`""
         if ($matchVersion -eq $null)
         {
           Write-Error "Version in tag ($version) does not match version in version.json"
