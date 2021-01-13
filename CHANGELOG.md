@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.10 - 2021.01.13
+- Use `Process.WaitForExit` to wait for cassandra processes to stop
+
 ## v1.4.1 - 2020.08.19
 - Allow to configure authenticator
 
