@@ -9,6 +9,9 @@ image: Visual Studio 2019
 init:
   - cmd: git config --global core.autocrlf false
 
+nuget:
+  disable_publish_on_pr: true
+
 before_build:
   - ps: |
       $ErrorActionPreference = "Stop"
@@ -30,11 +33,6 @@ before_build:
           Write-Error "Version in tag ($version) does not match version in version.json"
         }
       }
-
-nuget:
-  disable_publish_on_pr: true
-
-before_build:
   - cmd: dotnet --info
   - cmd: dotnet restore ./src/CassandraLocal/CassandraLocal.sln --verbosity minimal
 
