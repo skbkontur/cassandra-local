@@ -8,6 +8,8 @@ image: Visual Studio 2019
 
 init:
   - cmd: git config --global core.autocrlf false
+
+before_build:
   - ps: |
       $ErrorActionPreference = "Stop"
       $tagName = $env:APPVEYOR_REPO_TAG_NAME
