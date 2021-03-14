@@ -1,9 +1,14 @@
 # Changelog
+
+## v1.4.12 - 2021.03.14
+- Update dependencies.
+- Run tests against net5.0 tfm.
+
 ## 1.4.10 - 2021.01.13
-- Use `Process.WaitForExit` to wait for cassandra processes to stop
+- Use `Process.WaitForExit` to wait for cassandra processes to stop.
 
 ## v1.4.1 - 2020.08.19
-- Allow to configure authenticator
+- Allow to configure authenticator.
 
 ## v1.3.3 - 2019.11.14
 - Update Cassandra v3.11.x to [v3.11.5](http://archive.apache.org/dist/cassandra/3.11.5/).
