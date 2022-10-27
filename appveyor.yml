@@ -50,7 +50,7 @@ deploy:
   - provider: NuGet
     server: https://nuget.org
     api_key:
-      secure: y2RPf+gBBqffQVm8pg9qZcg99m7K8hsSa4z7VHvIE6t+kuO7r/oIqTVcryZzL93D
+      secure: yF8QZP8JVTST3Ys82b3YXn0zmtEqEU0236nJlN590TdToEiKmZS0BxmM4U2ae7vi
     skip_symbols: true
     on:
       SHOULD_PUBLISH_NUGET_PACKAGE: true
